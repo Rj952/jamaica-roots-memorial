@@ -1096,9 +1096,6 @@ const CreateView = ({ setView, setSelectedMemorial }: { setView: (v: string) => 
   };
 
   useEffect(() => { setTimeout(() => setLoaded(true), 100); }, []);
-  const [loaded, setLoaded] = useState(false);
-
-  useEffect(() => { setTimeout(() => setLoaded(true), 100); }, []);
 
   const steps = [
     { title: "Their Name", subtitle: "Who are you honoring?" },

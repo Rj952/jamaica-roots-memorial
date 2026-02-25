@@ -143,41 +143,7 @@ const parishes = [
 ];
 
 // âââ SAMPLE MEMORIAL DATA ââââââââââââââââââââââââââââââââ
-const sampleMemorials = [
-  {
-    id: 1,
-    name: "Icilda May Thompson",
-    years: "1934 \u2013 2024",
-    parish: "St. Elizabeth",
-    tribute: "A pillar of grace who taught us that love is the only legacy that matters. Her garden still blooms.",
-    photo: null,
-    candles: 47,
-    flowers: 23,
-    visitors: 312,
-  },
-  {
-    id: 2,
-    name: "Desmond Carlton Wright",
-    years: "1948 \u2013 2023",
-    parish: "Portland",
-    tribute: "Fisherman, father, storyteller. The sea remembers your songs, Papa.",
-    photo: null,
-    candles: 89,
-    flowers: 41,
-    visitors: 584,
-  },
-  {
-    id: 3,
-    name: "Marcia Elaine Brooks",
-    years: "1955 \u2013 2024",
-    parish: "Diaspora \u2013 United Kingdom",
-    tribute: "From Chapelton to Brixton, you carried Jamaica in your heart. Rest now, Mama.",
-    photo: null,
-    candles: 156,
-    flowers: 78,
-    visitors: 1247,
-  },
-];
+const sampleMemorials: any[] = [];
 
 // âââ ANIMATED BACKGROUND âââââââââââââââââââââââââââââââââ
 const SacredBackground = ({ variant = "default" }: { variant?: "default" | "memorial" | "create" }) => {

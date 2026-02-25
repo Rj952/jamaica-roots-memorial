@@ -804,7 +804,6 @@ const MemorialView = ({ memorial, setView }: { memorial: any; setView: (v: strin
     { name: "Aunt Beverly, Kingston", text: "Walk good, my darling. You are forever in our hearts.", time: "3 days ago" },
     { name: "Michael W., London", text: "Thank you for the lessons that shaped my life.", time: "1 week ago" },
   ]);
-  const [soundOn, setSoundOn] = useState(false);
   const [loaded, setLoaded] = useState(false);
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
 
@@ -839,42 +838,7 @@ const MemorialView = ({ memorial, setView }: { memorial: any; setView: (v: strin
         }} />
       ))}
 
-      {/* Sound toggle */}
-      <button
-        onClick={() => setSoundOn(!soundOn)}
-        aria-label={soundOn ? "Mute ambient sound" : "Play ambient sound"}
-        aria-pressed={soundOn}
-        style={{
-          position: "fixed", bottom: 32, right: 32, zIndex: 100,
-          width: 48, height: 48, borderRadius: "50%",
-          background: "rgba(255,255,255,0.08)",
-          backdropFilter: "blur(10px)",
-          border: "1px solid rgba(255,255,255,0.1)",
-          cursor: "pointer", display: "flex",
-          alignItems: "center", justifyContent: "center",
-          transition: "all 0.3s ease",
-        }}
-        onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.15)"}
-        onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
-      >
-        <Icons.Music size={18} color={soundOn ? tokens.colors.gold : "rgba(255,255,255,0.4)"} />
-      </button>
-      {soundOn && (
-        <div aria-live="polite" style={{
-          position: "fixed", bottom: 86, right: 32, zIndex: 100,
-          background: "rgba(26,20,16,0.9)", backdropFilter: "blur(10px)",
-          borderRadius: 12, padding: "12px 16px",
-          border: "1px solid rgba(255,255,255,0.08)",
-          animation: "fadeIn 0.3s ease",
-        }}>
-          <p style={{
-            fontFamily: tokens.fonts.body, fontSize: 11,
-            color: "rgba(255,255,255,0.5)", letterSpacing: "0.05em",
-          }}>Ambient Soundscape Playing</p>
-        </div>
-      )}
-
-      {/* Memorial Content */}
+            {/* Memorial Content */}
       <div style={{
         maxWidth: 680, margin: "0 auto",
         padding: "140px 24px 100px",
@@ -1794,30 +1758,34 @@ const AboutView = () => (
 export default function JamaicaRoots() {
   const [view, setView] = useState("home");
   const [selectedMemorial, setSelectedMemorial] = useState(sampleMemorials[0]);
+  const [soundOn, setSoundOn] = useState(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   const isDark = view === "memorial";
   const bgVariant = view === "memorial" ? "memorial" : view === "create" ? "create" : "default";
 
-    // Background music - loops continuously
+  // Initialize audio on mount
   useEffect(() => {
     const audio = new Audio(AUDIO_DATA_URI);
     audio.loop = true;
     audio.volume = 0.3;
-    const playAudio = () => {
-      audio.play().catch(() => {});
-    };
-    playAudio();
-    const handleClick = () => {
-      playAudio();
-      document.removeEventListener("click", handleClick);
-    };
-    document.addEventListener("click", handleClick);
+    audioRef.current = audio;
     return () => {
       audio.pause();
       audio.src = "";
-      document.removeEventListener("click", handleClick);
+      audioRef.current = null;
     };
   }, []);
+
+  // Play/pause based on soundOn toggle
+  useEffect(() => {
+    if (!audioRef.current) return;
+    if (soundOn) {
+      audioRef.current.play().catch(() => {});
+    } else {
+      audioRef.current.pause();
+    }
+  }, [soundOn]);
 
   return (
     <div style={{
@@ -1839,6 +1807,41 @@ export default function JamaicaRoots() {
           {view === "about" && <AboutView />}
         </div>
       </main>
+
+      {/* Global Sound Toggle */}
+      <button
+        onClick={() => setSoundOn(!soundOn)}
+        aria-label={soundOn ? "Mute ambient sound" : "Play ambient sound"}
+        aria-pressed={soundOn}
+        style={{
+          position: "fixed", bottom: 32, right: 32, zIndex: 100,
+          width: 48, height: 48, borderRadius: "50%",
+          background: "rgba(255,255,255,0.08)",
+          backdropFilter: "blur(10px)",
+          border: "1px solid rgba(255,255,255,0.1)",
+          cursor: "pointer", display: "flex",
+          alignItems: "center", justifyContent: "center",
+          transition: "all 0.3s ease",
+        }}
+        onMouseEnter={e => e.currentTarget.style.background = "rgba(255,255,255,0.15)"}
+        onMouseLeave={e => e.currentTarget.style.background = "rgba(255,255,255,0.08)"}
+      >
+        <Icons.Music size={18} color={soundOn ? tokens.colors.gold : "rgba(255,255,255,0.4)"} />
+      </button>
+      {soundOn && (
+        <div aria-live="polite" style={{
+          position: "fixed", bottom: 86, right: 32, zIndex: 100,
+          background: "rgba(26,20,16,0.9)", backdropFilter: "blur(10px)",
+          borderRadius: 12, padding: "12px 16px",
+          border: "1px solid rgba(255,255,255,0.08)",
+          animation: "fadeIn 0.3s ease",
+        }}>
+          <p style={{
+            fontFamily: tokens.fonts.body, fontSize: 11,
+            color: "rgba(255,255,255,0.5)", letterSpacing: "0.05em",
+          }}>Ambient Soundscape Playing</p>
+        </div>
+      )}
     </div>
   );
                        }

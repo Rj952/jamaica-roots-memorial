@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 
 // âââ DESIGN TOKENS âââââââââââââââââââââââââââââââââââââ
 const tokens = {
@@ -1143,6 +1143,27 @@ const CreateView = ({ setView, setSelectedMemorial }: { setView: (v: string) => 
     parish: "", tribute: "", photos: [],
     ownershipConfirmed: false, permissionConfirmed: false,
   });
+
+  const fileInputRefs = useRef<(HTMLInputElement | null)[]>([null, null, null, null]);
+  const [loaded, setLoaded] = useState(false);
+
+  const handlePhotoUpload = (index: number, event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const result = e.target?.result as string;
+      setFormData(prev => {
+        const newPhotos = [...prev.photos] as string[];
+        newPhotos[index] = result;
+        return { ...prev, photos: newPhotos };
+      });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  useEffect(() => { setTimeout(() => setLoaded(true), 100); }, []);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => { setTimeout(() => setLoaded(true), 100); }, []);
@@ -1287,34 +1308,55 @@ const CreateView = ({ setView, setSelectedMemorial }: { setView: (v: string) => 
         return (
           <div style={{ maxWidth: 450, margin: "0 auto" }}>
             <div style={{
-              display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16,
+              display: "grid", gridTemplateColumns: "repeat(2, 1fr)",
+              gap: 16,
             }}>
               {[0, 1, 2, 3].map(i => (
                 <div key={i}
                   role="button"
                   tabIndex={0}
-                  aria-label={i === 0 ? "Upload primary photo" : `Upload photo ${i + 1}`}
-                  onKeyDown={e => e.key === "Enter" && null}
+                  aria-label={i === 0 ? "Upload primary photo" : "Upload photo " + (i + 1)}
+                  onClick={() => fileInputRefs.current[i]?.click()}
+                  onKeyDown={e => { if (e.key === "Enter" || e.key === " ") fileInputRefs.current[i]?.click(); }}
                   style={{
+                    position: "relative",
                     aspectRatio: "1", borderRadius: 16,
-                    border: `1.5px dashed ${tokens.colors.warmSand}`,
+                    border: "1.5px dashed " + tokens.colors.warmSand,
                     display: "flex", flexDirection: "column",
                     alignItems: "center", justifyContent: "center", gap: 8,
                     cursor: "pointer",
-                    background: "rgba(255,255,255,0.3)",
+                    background: (formData.photos as string[])[i] ? "transparent" : "rgba(255,255,255,0.3)",
                     transition: "all 0.3s ease",
+                    overflow: "hidden",
                   }}
                   onMouseEnter={e => e.currentTarget.style.borderColor = tokens.colors.gold}
                   onMouseLeave={e => e.currentTarget.style.borderColor = tokens.colors.warmSand}
                 >
-                  <Icons.Camera size={24} color={tokens.colors.warmSand} />
-                  <span style={{
-                    fontFamily: tokens.fonts.body, fontSize: 11,
-                    color: tokens.colors.warmSand,
-                    letterSpacing: "0.05em",
-                  }}>
-                    {i === 0 ? "Primary Photo" : `Photo ${i + 1}`}
-                  </span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    ref={el => { fileInputRefs.current[i] = el; }}
+                    onChange={e => handlePhotoUpload(i, e)}
+                  />
+                  {(formData.photos as string[])[i] ? (
+                    <img
+                      src={(formData.photos as string[])[i]}
+                      alt={"Photo " + (i + 1)}
+                      style={{ width: "100%", height: "100%", objectFit: "cover", borderRadius: 14 }}
+                    />
+                  ) : (
+                    <>
+                      <Icons.Camera size={24} color={tokens.colors.warmSand} />
+                      <span style={{
+                        fontFamily: tokens.fonts.body, fontSize: 11,
+                        color: tokens.colors.warmSand,
+                        letterSpacing: "0.05em",
+                      }}>
+                        {i === 0 ? "Primary Photo" : "Photo " + (i + 1)}
+                      </span>
+                    </>
+                  )}
                 </div>
               ))}
             </div>
